@@ -71,8 +71,6 @@ resource "kubernetes_namespace" "app_namespace" {
   metadata {
     name = var.kubernetes_namespace
   }
-
-  depends_on = [azurerm_kubernetes_cluster.aks]
 }
 
 // Create Kubernetes Service Account
@@ -184,14 +182,6 @@ resource "kubernetes_service" "app_service" {
   depends_on = [kubernetes_deployment.app_deployment]
 }
 
-// Configure kubectl
-provider "kubernetes" {
-  host                   = azurerm_kubernetes_cluster.aks.kube_config.0.host
-  client_certificate     = base64decode(azurerm_kubernetes_cluster.aks.kube_config.0.client_certificate)
-  client_key             = base64decode(azurerm_kubernetes_cluster.aks.kube_config.0.client_key)
-  cluster_ca_certificate = base64decode(azurerm_kubernetes_cluster.aks.kube_config.0.cluster_ca_certificate)
-}
-
 // Outputs
 output "host" {
   value = azurerm_kubernetes_cluster.aks.kube_config.0.host
@@ -199,5 +189,20 @@ output "host" {
 
 output "kube_config_raw" {
   value     = azurerm_kubernetes_cluster.aks.kube_config_raw
+  sensitive = true
+}
+
+output "client_certificate" {
+  value     = azurerm_kubernetes_cluster.aks.kube_config.0.client_certificate
+  sensitive = true
+}
+
+output "client_key" {
+  value     = azurerm_kubernetes_cluster.aks.kube_config.0.client_key
+  sensitive = true
+}
+
+output "cluster_ca_certificate" {
+  value     = azurerm_kubernetes_cluster.aks.kube_config.0.cluster_ca_certificate
   sensitive = true
 } 

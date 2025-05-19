@@ -83,7 +83,14 @@ module "aks" {
   managed_identity_client_id = module.identity.managed_identity_client_id
   kubernetes_namespace  = var.kubernetes_namespace
   keyvault_url          = module.keyvault.keyvault_url
-  depends_on            = [module.acr, module.identity]
+}
+
+// Configure Kubernetes Provider
+provider "kubernetes" {
+  host                   = module.aks.host
+  client_certificate     = base64decode(module.aks.client_certificate)
+  client_key             = base64decode(module.aks.client_key)
+  cluster_ca_certificate = base64decode(module.aks.cluster_ca_certificate)
 }
 
 // Output Values
