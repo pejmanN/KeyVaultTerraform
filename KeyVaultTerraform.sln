@@ -18,6 +18,34 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Kubernetes", "Kubernetes", 
 		Kubernetes\serviceaccount.yaml = Kubernetes\serviceaccount.yaml
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "terraform", "terraform", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
+	ProjectSection(SolutionItems) = preProject
+		terraform\main.tf = terraform\main.tf
+		terraform\versions.tf = terraform\versions.tf
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "modules", "modules", "{A1A2732E-0AFD-4C75-9918-6026D6AA1FC1}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "acr", "acr", "{53EF7AB1-6697-4781-BD19-53D71041BD4B}"
+	ProjectSection(SolutionItems) = preProject
+		terraform\modules\acr\main.tf = terraform\modules\acr\main.tf
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "keyvault", "keyvault", "{296D6FA9-3883-4492-91DF-FA3DBBE3FFFD}"
+	ProjectSection(SolutionItems) = preProject
+		terraform\modules\keyvault\main.tf = terraform\modules\keyvault\main.tf
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "identity", "identity", "{D916F5D4-6189-4F1C-BCF0-7612FBF8CDB7}"
+	ProjectSection(SolutionItems) = preProject
+		terraform\modules\identity\main.tf = terraform\modules\identity\main.tf
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "aks", "aks", "{F3ED62DE-1B23-4595-86D1-239E50337DAC}"
+	ProjectSection(SolutionItems) = preProject
+		terraform\modules\aks\main.tf = terraform\modules\aks\main.tf
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -31,6 +59,13 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{A1A2732E-0AFD-4C75-9918-6026D6AA1FC1} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{53EF7AB1-6697-4781-BD19-53D71041BD4B} = {A1A2732E-0AFD-4C75-9918-6026D6AA1FC1}
+		{296D6FA9-3883-4492-91DF-FA3DBBE3FFFD} = {A1A2732E-0AFD-4C75-9918-6026D6AA1FC1}
+		{D916F5D4-6189-4F1C-BCF0-7612FBF8CDB7} = {A1A2732E-0AFD-4C75-9918-6026D6AA1FC1}
+		{F3ED62DE-1B23-4595-86D1-239E50337DAC} = {A1A2732E-0AFD-4C75-9918-6026D6AA1FC1}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {206BF435-3720-4CE2-992B-96F704B8550D}

@@ -1,4 +1,4 @@
-﻿# Azure KeyVault Terraform Infrastructure
+# Azure KeyVault Terraform Infrastructure
 
 This Terraform project automates the deployment of Azure infrastructure for a KeyVault-enabled application on AKS.
 
