@@ -110,7 +110,7 @@ After the infrastructure is deployed:
 1. **Build the Docker image**
 
    ```powershell
-   docker build -t keyvaultapp:1.0.1 .
+   docker build -t keyvaultterraformapp:1.0.1 .
    ```
    
    This builds a Docker image of your application with the tag "keyvaultapp:1.0.1" using the Dockerfile in your project.
@@ -118,8 +118,11 @@ After the infrastructure is deployed:
 2. **Login to Azure Container Registry**
 
    ```powershell
-   $acrLoginServer = terraform output -raw acr_login_server
-   az acr login --name $(echo $acrLoginServer | cut -d'.' -f1)
+   $azureContainerRegistryName = "ordercontainerregistry"
+   $serviceGroupName = "orderRG"
+   $resourceGroupLocation = "westus"
+   az acr login --name $azureContainerRegistryName
+
    ```
    
    This retrieves the ACR login server URL from Terraform outputs and authenticates Docker with your Azure Container Registry.
@@ -127,8 +130,11 @@ After the infrastructure is deployed:
 3. **Tag and push the image**
 
    ```powershell
-   docker tag keyvaultapp:1.0.1 "$acrLoginServer/keyvaultterraformapp:1.0.1"
-   docker push "$acrLoginServer/keyvaultterraformapp:1.0.1"
+  
+   $azureContainerRegistryAddress=$(az acr show --name $azureContainerRegistryName --query "loginServer" --output tsv)
+
+   docker tag keyvaultterraformapp:1.0.1 "$azureContainerRegistryAddress/keyvaultterraformapp:1.0.1"
+   docker push "$azureContainerRegistryAddress/keyvaultterraformapp:1.0.1"
    ```
    
    This tags your local image with the ACR repository name and pushes it to your Azure Container Registry, making it available for AKS to pull.

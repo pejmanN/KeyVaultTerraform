@@ -47,11 +47,20 @@ resource "azurerm_key_vault" "keyvault" {
   }
 }
 
+// Assign Key Vault Administrator role to the current user
+resource "azurerm_role_assignment" "keyvault_admin" {
+  scope                = azurerm_key_vault.keyvault.id
+  role_definition_name = "Key Vault Administrator"
+  principal_id         = data.azurerm_client_config.current.object_id
+}
+
 // Create a secret for the application
 resource "azurerm_key_vault_secret" "user_secret" {
   name         = "UserSetting--MySecret"
   value        = "Secret From Azure KeyVault"
   key_vault_id = azurerm_key_vault.keyvault.id
+  
+  depends_on = [azurerm_role_assignment.keyvault_admin]
 }
 
 // Outputs
