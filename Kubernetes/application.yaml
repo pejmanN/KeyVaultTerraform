@@ -1,21 +1,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: Keyvaultterraformapp-deployment
+  name: keyvaultterraformapp-deployment
 spec:
   selector:
     matchLabels:
-      app: Keyvaultterraformapp
+      app: keyvaultterraformapp
   template:
     metadata:
       labels:
-        app: Keyvaultterraformapp
+        app: keyvaultterraformapp
         azure.workload.identity/use: "true"
     spec:
-      serviceAccountName: Keyvaultterraformapp-serviceaccount
+      serviceAccountName: keyvaultterraformapp-serviceaccount
       containers:
-        - name: Keyvaultterraformapp
-          image: ordercontainerregistry.azurecr.io/Keyvaultterraformapp:1.0.1
+        - name: keyvaultterraformapp
+          image: ordercontainerregistry.azurecr.io/keyvaultterraformapp:1.0.1
           ports:
             - containerPort: 5002
           env:

@@ -1,11 +1,11 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: Keyvaultterraformapp-service
+  name: keyvaultterraformapp-service
 spec:
   type: LoadBalancer
   selector:
-    app: Keyvaultterraformapp
+    app: keyvaultterraformapp
   ports:
   - port: 80
     targetPort: 5002

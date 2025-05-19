@@ -76,7 +76,7 @@ resource "kubernetes_namespace" "app_namespace" {
 // Create Kubernetes Service Account
 resource "kubernetes_service_account" "app_service_account" {
   metadata {
-    name      = "Keyvaultterraformapp-serviceaccount"
+    name      = "keyvaultterraformapp-serviceaccount"
     namespace = kubernetes_namespace.app_namespace.metadata[0].name
     annotations = {
       "azure.workload.identity/client-id" = var.managed_identity_client_id
@@ -104,7 +104,7 @@ resource "azurerm_federated_identity_credential" "federated_credential" {
 // Create Kubernetes Deployment
 resource "kubernetes_deployment" "app_deployment" {
   metadata {
-    name      = "Keyvaultterraformapp-deployment"
+    name      = "keyvaultterraformapp-deployment"
     namespace = kubernetes_namespace.app_namespace.metadata[0].name
   }
 
@@ -113,14 +113,14 @@ resource "kubernetes_deployment" "app_deployment" {
 
     selector {
       match_labels = {
-        app = "Keyvaultterraformapp"
+        app = "keyvaultterraformapp"
       }
     }
 
     template {
       metadata {
         labels = {
-          app                           = "Keyvaultterraformapp"
+          app                           = "keyvaultterraformapp"
           "azure.workload.identity/use" = "true"
         }
       }
@@ -129,8 +129,8 @@ resource "kubernetes_deployment" "app_deployment" {
         service_account_name = kubernetes_service_account.app_service_account.metadata[0].name
 
         container {
-          image = "${split("/", var.acr_id)[8]}.azurecr.io/Keyvaultterraformapp:1.0.1"
-          name  = "Keyvaultterraformapp"
+          image = "${split("/", var.acr_id)[8]}.azurecr.io/keyvaultterraformapp:1.0.1"
+          name  = "keyvaultterraformapp"
 
           port {
             container_port = 5002
@@ -162,13 +162,13 @@ resource "kubernetes_deployment" "app_deployment" {
 // Create Kubernetes Service
 resource "kubernetes_service" "app_service" {
   metadata {
-    name      = "Keyvaultterraformapp-service"
+    name      = "keyvaultterraformapp-service"
     namespace = kubernetes_namespace.app_namespace.metadata[0].name
   }
 
   spec {
     selector = {
-      app = "Keyvaultterraformapp"
+      app = "keyvaultterraformapp"
     }
 
     port {
