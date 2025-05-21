@@ -54,12 +54,27 @@ resource "azurerm_role_assignment" "keyvault_admin" {
   principal_id         = data.azurerm_client_config.current.object_id
 }
 
-// Create a secret for the application
-resource "azurerm_key_vault_secret" "user_secret" {
-  name         = "UserSetting--MySecret"
-  value        = "Secret From Azure KeyVault"
-  key_vault_id = azurerm_key_vault.keyvault.id
-  
+// Use a null_resource with local-exec to create the secret if it doesn't exist
+resource "null_resource" "create_secret_if_not_exists" {
+  triggers = {
+    key_vault_id = azurerm_key_vault.keyvault.id
+  }
+
+  provisioner "local-exec" {
+    command = <<EOT
+      $secretExists = $null
+      try {
+        $secretExists = az keyvault secret show --vault-name ${var.keyvault_name} --name "UserSetting--MySecret" --query "id" -o tsv
+        Write-Host "Secret 'UserSetting--MySecret' already exists in Key Vault '${var.keyvault_name}'"
+      } catch {
+        Write-Host "Secret 'UserSetting--MySecret' does not exist in Key Vault '${var.keyvault_name}'. Creating it..."
+        az keyvault secret set --vault-name ${var.keyvault_name} --name "UserSetting--MySecret" --value "Secret From Azure KeyVault"
+        Write-Host "Secret 'UserSetting--MySecret' created successfully"
+      }
+    EOT
+    interpreter = ["PowerShell", "-Command"]
+  }
+
   depends_on = [azurerm_role_assignment.keyvault_admin]
 }
 
