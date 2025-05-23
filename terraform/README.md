@@ -276,6 +276,35 @@ This script will:
 
 After importing, you can modify the `keyvault/main.tf` file to use the `azurerm_key_vault_secret` resource instead of the `null_resource`.
 
+in the powershell we have :
+```
+terraform import "module.keyvault.azurerm_key_vault_secret.user_secret" $secretId
+
+```
+this is goning to import secret to '.tfstate' file,  The import address module.keyvault.azurerm_key_vault_secret.user_secret is constructed based on the structure of your Terraform configuration. Let me break down how this address is formed:
+1. `module.keyvault` - This refers to the module named "keyvault" that you defined in your main.tf file:
+```
+ module "keyvault" {
+     source              = "./modules/keyvault"
+     resource_group_name = azurerm_resource_group.rg.name
+     location            = var.location
+     keyvault_name       = var.keyvault_name
+     depends_on          = [azurerm_resource_group.rg]
+   }
+```
+
+2. `azurerm_key_vault_secret` - This is the resource type that you want to import. In your keyvault module, you defined this resource:
+```
+   resource "azurerm_key_vault_secret" "user_secret" {
+     name         = "UserSetting--MySecret"
+     value        = "Secret From Azure KeyVault"
+     key_vault_id = azurerm_key_vault.keyvault.id
+     
+     depends_on = [azurerm_role_assignment.keyvault_admin]
+   }
+```
+3. `user_secret` - This is the name/identifier you gave to the resource in your Terraform configuration (from the code snippet above).
+
 ### Option 3: Separate Secret Management
 
 You can also use the provided PowerShell script to manage the secret entirely outside of Terraform:
