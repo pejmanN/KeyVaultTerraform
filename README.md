@@ -84,8 +84,12 @@ terraform/
    cd terraform
    terraform init
    ```
+
+   NOTE: in this proj u can change dir to E:\TestProject\_Azure\KeyVault-Terraform\KeyVaultTerraform\terraform>
+ 
+   This downloads required providers (e.g., azurerm for Azure). and sets up the backend. The initialization process prepares your working directory for other Terraform commands.
    
-   This downloads required providers and sets up the backend. The initialization process prepares your working directory for other Terraform commands.
+
 
 3. **Review the Terraform Plan**
 
@@ -94,6 +98,10 @@ terraform/
    ```
    
    This shows what resources will be created, modified, or destroyed. It's a preview of changes that will be applied to your infrastructure.
+   terraform plan can Shows the changes Terraform would apply to reach the desired state (based on your .tf code) from the current real-world state (from terraform.tfstate)
+ ,for this purposeterraform plan only works with an existing state — if one exists, since `.tfstate` fille will be created on the 
+  `terraform apply` step, so in the first iteration there is no .tfstate file in `terrafom plan`  step, so terrafom consider
+  all resources in the `.tf` files as new resources, and in the plan show it would creae all resources.
 
 4. **Apply the Terraform Configuration**
 
@@ -217,3 +225,45 @@ terraform apply -var="resource_group_name=myCustomRG" -var="location=eastus"
 ```
 
 This allows you to deploy to different regions or use different resource names without modifying the Terraform files. 
+
+
+**********************
+### Command	Purpose
+#### terraform init =>
+Sets up the project (downloads provider plugins, initializes backend)
+
+#### terraform import=>
+Brings existing cloud resources into Terraform's control (tfstate)
+
+#### terraform plan=>
+Previews what will be created/changed/deleted
+
+terraform apply	Applies the changes and updates the state file
+
+📍 When is terraform.tfstate created?
+✅ It is created during:
+terraform apply (for the first time)
+
+➤ If it doesn’t already exist, Terraform creates it after the first successful apply.
+➤ It contains the real-world infrastructure state that Terraform manages.
+
+🧠 What is stored inside .tfstate?
+Real resource IDs, names, locations, and other actual values from Azure.
+
+    Resource metadata (e.g., the id of a Key Vault, AKS, secrets, etc.).
+
+    Output values.
+
+    Dependencies between resources.
+
+    So Terraform compares the .tfstate with your .tf files to decide what to do.
+
+📁 Where is terraform.tfstate stored?
+By default:
+It's saved locally in your project folder (same folder as your .tf files).
+
+The file name is:
+```
+terraform.tfstate
+
+```
