@@ -32,6 +32,18 @@ resource "azurerm_key_vault" "keyvault" {
   enabled_for_disk_encryption = true
   tenant_id                   = var.tenant_id
   soft_delete_retention_days  = 7
+
+  //Ignore updates to this value  on the upcomming execution
+  lifecycle {
+    ignore_changes = [
+      soft_delete_retention_days
+    ]
+  }
+
+  // enable rbac authorization
+  enable_rbac_authorization   = true 
+
+
   purge_protection_enabled    = false
 
   sku_name = "standard"

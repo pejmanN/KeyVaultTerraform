@@ -77,6 +77,19 @@ terraform/
    terraform apply -var="image_exists=true"
    ```
 
+## How Managed Identity Data Flows to Kubernetes Resources
+
+When you run the second terraform apply -var="image_exists=true", here's exactly how the managed identity data gets passed to your Kubernetes service account:
+Terraform State Preservation:
+
+1. After your first terraform apply, Terraform stores all resource data (including managed identity details) in the state file
+This state is maintained between runs, so all infrastructure data remains available
+2. Data Flow in the Second Apply:
+When you run  `terraform apply -var="image_exists=true"``, Terraform reads the existing state
+The module.infrastructure outputs are already available, including:
+managed_identity_id
+managed_identity_client_id
+
 ## Build and Push Docker Image
 
 After the infrastructure is deployed:
@@ -233,3 +246,71 @@ The file name is:
 terraform.tfstate
 
 ```
+
+
+**********
+✅ terraform refresh
+🔹 Purpose:
+Update the state file to reflect the actual state of your cloud environment — without making any changes to resources.
+
+🔹 What it does:
+
+Reads your current Terraform configuration.
+
+Queries your cloud provider (e.g., Azure) to fetch the real state of resources.
+
+Updates your local state file to match what actually exists.
+
+Does NOT create, modify, or delete any resources.
+
+🔹 Use when:
+
+Your state file is out of sync (e.g., after manual changes in the Azure Portal).
+
+You want to verify what's currently deployed, without changing anything.
+
+You need to refresh output values based on the current state of resources.
+
+✅ terraform apply
+🔹 Purpose:
+Create, update, or delete resources to bring your cloud environment in sync with your Terraform configuration.
+
+🔹 What it does:
+
+Reads your Terraform code (HCL).
+
+Compares it against the current state file.
+
+Generates a plan of required changes.
+
+Asks for your confirmation.
+
+Applies changes to the cloud.
+
+Updates your state file accordingly.
+
+🔹 Use when:
+
+You want to deploy or update infrastructure.
+
+You’ve made changes to your Terraform code and are ready to apply them.
+
+🔸 In your case: for the initial deployment of your Azure infrastructure.
+
+✅ terraform apply -var="image_exists=true"
+🔹 Purpose:
+Same as terraform apply, but overrides the value of a specific variable (image_exists).
+
+🔹 What it does:
+
+Performs all actions of terraform apply.
+
+Temporarily sets the variable image_exists to true.
+
+🔹 Use when:
+
+You want to override a variable defined in your Terraform files.
+
+You want to conditionally deploy specific parts of your infrastructure.
+
+🔸 In your case: triggers the second deployment step — deploying Kubernetes resources after the Docker image has been built and pushed.
