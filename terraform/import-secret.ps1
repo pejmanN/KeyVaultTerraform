@@ -3,26 +3,32 @@ param(
     [string]$KeyVaultName,
     
     [Parameter(Mandatory=$true)]
-    [string]$SecretName,
-    
-    [Parameter(Mandatory=$false)]
-    [string]$SecretVersion
+    [string]$SecretName
 )
 
-# Get the Key Vault ID
-$keyVaultId = az keyvault show --name $KeyVaultName --query "id" -o tsv
-
-if (-not $SecretVersion) {
-    # Get the latest version of the secret
+# Check if the secret exists
+try {
     $secretId = az keyvault secret show --vault-name $KeyVaultName --name $SecretName --query "id" -o tsv
-} else {
-    # Use the specified version
-    $secretId = "https://$KeyVaultName.vault.azure.net/secrets/$SecretName/$SecretVersion"
+    Write-Host "Secret '$SecretName' found in Key Vault '$KeyVaultName'"
+    Write-Host "Secret ID: $secretId"
+} catch {
+    Write-Host "Error: Secret '$SecretName' not found in Key Vault '$KeyVaultName'" -ForegroundColor Red
+    exit 1
 }
 
-Write-Host "Importing secret $secretId into Terraform state..."
-
 # Import the secret into Terraform state
-terraform import "module.keyvault.azurerm_key_vault_secret.user_secret" $secretId
+Write-Host "Importing secret into Terraform state..."
+terraform import "module.infrastructure.module.keyvault.azurerm_key_vault_secret.user_secret" $secretId
 
-Write-Host "Secret imported successfully. You can now use terraform apply to manage it." 
+Write-Host "Secret imported successfully!" -ForegroundColor Green
+Write-Host "You can now manage this secret with Terraform."
+Write-Host ""
+Write-Host "Note: You need to update the keyvault module to use the azurerm_key_vault_secret resource instead of null_resource."
+Write-Host "Example:"
+Write-Host '```'
+Write-Host 'resource "azurerm_key_vault_secret" "user_secret" {'
+Write-Host '  name         = "UserSetting--MySecret"'
+Write-Host '  value        = "Secret From Azure KeyVault"'
+Write-Host '  key_vault_id = azurerm_key_vault.keyvault.id'
+Write-Host '}'
+Write-Host '```' 

@@ -303,7 +303,10 @@ this is goning to import secret to '.tfstate' file,  The import address module.k
      depends_on = [azurerm_role_assignment.keyvault_admin]
    }
 ```
-3. `user_secret` - This is the name/identifier you gave to the resource in your Terraform configuration (from the code snippet above).
+3. `user_secret` - This is the name/identifier you gave to the resource in your Terraform configuration (from the code snippet above).So the full address module.keyvault.azurerm_key_vault_secret.user_secret is the fully qualified path to the resource in your Terraform state, which follows this pattern:
+```
+For resources in modules: module.<MODULE_NAME>.<RESOURCE_TYPE>.<RESOURCE_NAME>
+```
 
 ### Option 3: Separate Secret Management
 
@@ -335,15 +338,94 @@ terraform apply -var="resource_group_name=myCustomRG" -var="location=eastus"
 
 This allows you to deploy to different regions or use different resource names without modifying the Terraform files. 
 
+## Two-Step Deployment Process
 
+To solve the circular dependency between infrastructure deployment and application deployment (where the AKS cluster needs to be created before pushing images to ACR, but the Kubernetes deployment needs the image to already exist), we've implemented a two-step deployment process with separate modules:
 
+### Project Structure
+
+```
+terraform/
+├── main.tf                      # Main configuration file
+├── versions.tf                  # Terraform and provider versions
+├── modules/
+│   ├── infrastructure/         # Infrastructure module (ACR, AKS, Key Vault, Identity)
+│   └── application/            # Application module (Kubernetes resources)
+├── deploy-application.ps1       # Script to build, push image and deploy app
+└── README.md                    # This file
+```
+
+### Step 1: Deploy Infrastructure
+
+First, deploy only the Azure infrastructure (Resource Group, ACR, Key Vault, AKS, Managed Identity):
+
+```powershell
+terraform init
+terraform apply
+```
+
+This creates all the Azure resources but doesn't deploy the application to Kubernetes because the `image_exists` variable defaults to `false`.
+
+### Step 2: Build, Push, and Deploy the Application
+
+After the infrastructure is deployed, use the provided script to build and push the Docker image, then deploy the application:
+
+```powershell
+./deploy-application.ps1
+```
+
+This script will:
+1. Build the Docker image
+2. Log in to ACR
+3. Tag and push the image
+4. Run `terraform apply -var="image_exists=true"` to deploy the Kubernetes resources
+
+The `image_exists=true` flag tells Terraform to include the application module, which creates:
+- Kubernetes namespace
+- Service account with workload identity
+- Federated identity credential
+- Deployment with the container image
+- LoadBalancer service
+
+### Manual Deployment
+
+If you prefer to run the steps manually:
+
+1. Deploy infrastructure:
+   ```powershell
+   terraform apply
+   ```
+
+2. Build and push the image:
+   ```powershell
+   $acrLoginServer = terraform output -raw acr_login_server
+   docker build -t keyvaultapp:1.0.1 ..
+   az acr login --name $($acrLoginServer -split '\.')[0]
+   docker tag keyvaultapp:1.0.1 "$acrLoginServer/keyvaultterraformapp:1.0.1"
+   docker push "$acrLoginServer/keyvaultterraformapp:1.0.1"
+   ```
+
+3. Deploy the application:
+   ```powershell
+   terraform apply -var="image_exists=true"
+   ```
+
+### Benefits of This Approach
+
+1. **Clear Separation**: Infrastructure and application deployment are clearly separated
+2. **No Circular Dependencies**: The infrastructure is created before trying to deploy the application
+3. **Conditional Deployment**: The application is only deployed when the image exists
+4. **Reusable Modules**: The infrastructure and application modules can be reused in other projects
+5. **Simplified CI/CD**: Easy to integrate with CI/CD pipelines
+
+This approach follows best practices for Terraform and Kubernetes deployments, making it easier to manage and maintain your infrastructure and applications.
 
 ***************************************************************
 ## NOTE
 
 #### Define Output
 In Another Terraform Module
-Let’s say you have this output in module A:
+Let's say you have this output in module A:
 ```
 output "resource_group_name" {
   value = azurerm_resource_group.rg.name
@@ -375,17 +457,16 @@ Azure will create a DNS name like:
 https://<dns_prefix>-<hash>.<region>.azmk8s.io
 https://orderazurekuber-abcd.westus.azmk8s.io
 ```
-⚠️ What happens if you don’t set it?
+⚠️ What happens if you don't set it?
 ❌ Terraform will throw an error. This field is required unless you use private_cluster_enabled = true (which hides the API server from public access).
 
 Without it, AKS doesn't know what to name the public endpoint for the Kubernetes API.
-
 
 🔐 1.  `identity { type = "SystemAssigned" } – AKS Cluster's Own Identity`
 
 You are telling Azure:
 
-> “Please generate a System-Assigned Managed Identity for this AKS cluster.”
+> "Please generate a System-Assigned Managed Identity for this AKS cluster."
 
 ✅ What does it do?
 This creates a Managed Identity for the AKS cluster itself — think of it like a "username" that the control plane can use to interact with Azure resources on behalf of the cluster.
@@ -482,7 +563,7 @@ identity {
 ```
 You are telling Azure:
 
-> “Please generate a System-Assigned Managed Identity for this AKS cluster.”
+> "Please generate a System-Assigned Managed Identity for this AKS cluster."
 
 ⚠️ But at this point, this identity has zero permissions by default.
 Azure creates it, but:
@@ -491,7 +572,7 @@ It cannot pull images from ACR until you assign AcrPull.
 
 It cannot access Key Vault, Monitor, Storage, etc., unless you give it a role.
 
-It is not automatically powerful — it’s empty by design (security principle: least privilege).
+It is not automatically powerful — it's empty by design (security principle: least privilege).
 
 ✅ To grant permissions, you must explicitly assign a role to this identity
 Example: Grant it access to ACR (Azure Container Registry), we have to define above , in above

@@ -41,7 +41,17 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "identity", "identity", "{D9
 		terraform\modules\identity\main.tf = terraform\modules\identity\main.tf
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "aks", "aks", "{F3ED62DE-1B23-4595-86D1-239E50337DAC}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "application", "application", "{1C7014E3-06E4-4ED5-97FC-D72EB95AFBC0}"
+	ProjectSection(SolutionItems) = preProject
+		terraform\modules\application\main.tf = terraform\modules\application\main.tf
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "infrastructure", "infrastructure", "{9F373D3B-607E-4E5E-AA72-7CCE115CDE85}"
+	ProjectSection(SolutionItems) = preProject
+		terraform\modules\infrastructure\main.tf = terraform\modules\infrastructure\main.tf
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "aks", "aks", "{F864A432-5E3A-453A-9290-CFCCFBA79630}"
 	ProjectSection(SolutionItems) = preProject
 		terraform\modules\aks\main.tf = terraform\modules\aks\main.tf
 	EndProjectSection
@@ -65,7 +75,9 @@ Global
 		{53EF7AB1-6697-4781-BD19-53D71041BD4B} = {A1A2732E-0AFD-4C75-9918-6026D6AA1FC1}
 		{296D6FA9-3883-4492-91DF-FA3DBBE3FFFD} = {A1A2732E-0AFD-4C75-9918-6026D6AA1FC1}
 		{D916F5D4-6189-4F1C-BCF0-7612FBF8CDB7} = {A1A2732E-0AFD-4C75-9918-6026D6AA1FC1}
-		{F3ED62DE-1B23-4595-86D1-239E50337DAC} = {A1A2732E-0AFD-4C75-9918-6026D6AA1FC1}
+		{1C7014E3-06E4-4ED5-97FC-D72EB95AFBC0} = {A1A2732E-0AFD-4C75-9918-6026D6AA1FC1}
+		{9F373D3B-607E-4E5E-AA72-7CCE115CDE85} = {A1A2732E-0AFD-4C75-9918-6026D6AA1FC1}
+		{F864A432-5E3A-453A-9290-CFCCFBA79630} = {A1A2732E-0AFD-4C75-9918-6026D6AA1FC1}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {206BF435-3720-4CE2-992B-96F704B8550D}

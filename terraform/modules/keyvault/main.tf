@@ -13,6 +13,14 @@ variable "keyvault_name" {
   description = "Name of the Azure Key Vault"
 }
 
+variable "tenant_id" {
+  description = "Azure tenant ID"
+}
+
+variable "object_id" {
+  description = "Object ID of the current user"
+}
+
 // Data source for current Azure client configuration
 data "azurerm_client_config" "current" {}
 
@@ -22,7 +30,7 @@ resource "azurerm_key_vault" "keyvault" {
   location                    = var.location
   resource_group_name         = var.resource_group_name
   enabled_for_disk_encryption = true
-  tenant_id                   = data.azurerm_client_config.current.tenant_id
+  tenant_id                   = var.tenant_id
   soft_delete_retention_days  = 7
   purge_protection_enabled    = false
 
@@ -30,8 +38,8 @@ resource "azurerm_key_vault" "keyvault" {
 
   // Grant permissions to the current user (useful for initial setup)
   access_policy {
-    tenant_id = data.azurerm_client_config.current.tenant_id
-    object_id = data.azurerm_client_config.current.object_id
+    tenant_id = var.tenant_id
+    object_id = var.object_id
 
     key_permissions = [
       "Get", "List", "Create", "Delete", "Update",
@@ -51,7 +59,7 @@ resource "azurerm_key_vault" "keyvault" {
 resource "azurerm_role_assignment" "keyvault_admin" {
   scope                = azurerm_key_vault.keyvault.id
   role_definition_name = "Key Vault Administrator"
-  principal_id         = data.azurerm_client_config.current.object_id
+  principal_id         = var.object_id
 }
 
 // Use a null_resource with local-exec to create the secret if it doesn't exist

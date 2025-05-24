@@ -41,56 +41,51 @@ variable "kubernetes_namespace" {
   default     = "keyvaultapp"
 }
 
+variable "image_exists" {
+  description = "Whether the container image exists in ACR"
+  type        = bool
+  default     = false
+}
+
 // Create Resource Group
 resource "azurerm_resource_group" "rg" {
   name     = var.resource_group_name
   location = var.location
 }
 
-// Import modules
-module "acr" {
-  source              = "./modules/acr"
+// Infrastructure Module (ACR, Key Vault, AKS, Managed Identity)
+module "infrastructure" {
+  source              = "./modules/infrastructure"
   resource_group_name = azurerm_resource_group.rg.name
   location            = var.location
   acr_name            = var.acr_name
-  depends_on          = [azurerm_resource_group.rg]
-}
-
-module "keyvault" {
-  source              = "./modules/keyvault"
-  resource_group_name = azurerm_resource_group.rg.name
-  location            = var.location
   keyvault_name       = var.keyvault_name
+  aks_name            = var.aks_name
+  managed_identity_name = var.managed_identity_name
+  kubernetes_namespace  = var.kubernetes_namespace
   depends_on          = [azurerm_resource_group.rg]
 }
 
-module "identity" {
-  source               = "./modules/identity"
-  resource_group_name  = azurerm_resource_group.rg.name
-  location             = var.location
-  managed_identity_name = var.managed_identity_name
-  keyvault_id          = module.keyvault.keyvault_id
-  depends_on           = [module.keyvault]
-}
-
-module "aks" {
-  source                = "./modules/aks"
-  resource_group_name   = azurerm_resource_group.rg.name
-  location              = var.location
-  aks_name              = var.aks_name
-  acr_id                = module.acr.acr_id
-  managed_identity_id   = module.identity.managed_identity_id
-  managed_identity_client_id = module.identity.managed_identity_client_id
-  kubernetes_namespace  = var.kubernetes_namespace
-  keyvault_url          = module.keyvault.keyvault_url
+// Application Module (Kubernetes resources)
+module "application" {
+  source              = "./modules/application"
+  count               = var.image_exists ? 1 : 0
+  resource_group_name = azurerm_resource_group.rg.name
+  kubernetes_namespace = var.kubernetes_namespace
+  acr_login_server    = module.infrastructure.acr_login_server
+  keyvault_url        = module.infrastructure.keyvault_url
+  managed_identity_id = module.infrastructure.managed_identity_id
+  managed_identity_client_id = module.infrastructure.managed_identity_client_id
+  aks_oidc_issuer_url = module.infrastructure.aks_oidc_issuer_url
+  depends_on          = [module.infrastructure]
 }
 
 // Configure Kubernetes Provider
 provider "kubernetes" {
-  host                   = module.aks.host
-  client_certificate     = base64decode(module.aks.client_certificate)
-  client_key             = base64decode(module.aks.client_key)
-  cluster_ca_certificate = base64decode(module.aks.cluster_ca_certificate)
+  host                   = module.infrastructure.aks_host
+  client_certificate     = base64decode(module.infrastructure.aks_client_certificate)
+  client_key             = base64decode(module.infrastructure.aks_client_key)
+  cluster_ca_certificate = base64decode(module.infrastructure.aks_cluster_ca_certificate)
 }
 
 // Output Values
@@ -99,23 +94,27 @@ output "resource_group_name" {
 }
 
 output "acr_login_server" {
-  value = module.acr.acr_login_server
+  value = module.infrastructure.acr_login_server
 }
 
 output "keyvault_url" {
-  value = module.keyvault.keyvault_url
+  value = module.infrastructure.keyvault_url
 }
 
 output "aks_host" {
-  value = module.aks.host
+  value = module.infrastructure.aks_host
   sensitive = true
 }
 
 output "managed_identity_client_id" {
-  value = module.identity.managed_identity_client_id
+  value = module.infrastructure.managed_identity_client_id
 }
 
 output "aks_kube_config" {
-  value     = module.aks.kube_config_raw
+  value     = module.infrastructure.aks_kube_config
   sensitive = true
+}
+
+output "aks_oidc_issuer_url" {
+  value = module.infrastructure.aks_oidc_issuer_url
 } 

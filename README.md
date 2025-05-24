@@ -23,50 +23,6 @@ terraform/
 └── README.md           # This file
 ```
 
-## File Descriptions
-
-### Main Configuration Files
-
-1. **main.tf**
-   - Defines the Azure provider configuration
-   - Declares variables for resource names and locations
-   - Creates the resource group
-   - Imports and configures all modules (ACR, AKS, Key Vault, Managed Identity)
-   - Sets up dependencies between resources
-   - Defines output values for important resource properties
-
-2. **versions.tf**
-   - Specifies the required Terraform version (>= 1.0.0)
-   - Defines required provider versions:
-     - Azure RM provider (~> 3.0)
-     - Kubernetes provider (~> 2.0)
-
-### Module Files
-
-1. **modules/acr/main.tf**
-   - Creates an Azure Container Registry with Basic SKU
-   - Outputs the ACR ID and login server URL
-   - Used to store Docker images for the application
-
-2. **modules/keyvault/main.tf**
-   - Creates an Azure Key Vault for storing secrets
-   - Sets up access policies for the current user
-   - Creates a sample secret "UserSetting--MySecret"
-   - Outputs the Key Vault ID and URL
-
-3. **modules/identity/main.tf**
-   - Creates a User Assigned Managed Identity
-   - Assigns "Key Vault Secrets User" role to the identity
-   - Outputs the identity's ID, client ID, and principal ID
-   - Enables secure access to Key Vault from AKS
-
-4. **modules/aks/main.tf**
-   - Creates an AKS cluster with workload identity enabled
-   - Sets up role assignment for AKS to pull from ACR
-   - Creates Kubernetes namespace, service account, and federated identity
-   - Deploys the application with proper identity configuration
-   - Creates a LoadBalancer service to expose the application
-   - Configures the Kubernetes provider for managing resources
 
 ## Getting Started
 
@@ -103,13 +59,23 @@ terraform/
   `terraform apply` step, so in the first iteration there is no .tfstate file in `terrafom plan`  step, so terrafom consider
   all resources in the `.tf` files as new resources, and in the plan show it would creae all resources.
 
-4. **Apply the Terraform Configuration**
+4. **Apply the Terraform Configuration for Infra**
 
    ```powershell
    terraform apply
    ```
    
    This creates all the resources defined in your Terraform configuration. When prompted, type `yes` to confirm and start the deployment process.
+
+
+5. **Build and Push Docker Image to ACR** 
+
+  > its explained in seperated section to how to do that.
+
+6. **Deploy the application**
+   ```powershell
+   terraform apply -var="image_exists=true"
+   ```
 
 ## Build and Push Docker Image
 
