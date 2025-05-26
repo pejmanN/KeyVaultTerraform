@@ -1,0 +1,40 @@
+# Default values for myservice
+# This is a YAML-formatted file.
+
+replicaCount: 1
+
+image:
+  repository: myservice
+  tag: latest
+  pullPolicy: IfNotPresent
+
+serviceAccount:
+  # The name of the service account to use.
+  # If not set, will use the release name
+  name: ""
+  annotations:
+    azure.workload.identity/client-id: ""
+  labels:
+    azure.workload.identity/use: "true"
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 8080
+
+resources:
+  limits:
+    cpu: 100m
+    memory: 128Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+env:
+  KEYVAULT_URL: ""
+
+# Namespace to deploy into
+namespace: default
+
+# Service account name
+serviceAccountName: myservice 
