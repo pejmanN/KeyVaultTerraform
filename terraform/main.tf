@@ -5,10 +5,14 @@ provider "azurerm" {
   features {}
 }
 
-// Configure Terraform backend (for production, use Azure Storage)
+// Configure Terraform backend (using Azure Storage)
 terraform {
-  backend "local" {
-    path = "terraform.tfstate"
+  backend "azurerm" {
+    # These values must be provided via command line or environment variables
+    # resource_group_name  = "shared-infrastructure-rg"
+    # storage_account_name = "tfstate12345"
+    # container_name       = "tfstate"
+    # key                  = "keyvault-service.tfstate"
   }
   
   required_providers {
@@ -27,11 +31,14 @@ terraform {
   }
 }
 
-// Get shared infrastructure outputs
+// Get shared infrastructure outputs from remote state
 data "terraform_remote_state" "infrastructure" {
-  backend = "local"
+  backend = "azurerm"
   config = {
-    path = "../../AzureInfra/terraform.tfstate"
+    resource_group_name  = var.shared_resource_group_name
+    storage_account_name = var.shared_storage_account_name
+    container_name       = var.shared_container_name
+    key                  = "azure-infra.tfstate"
   }
 }
 

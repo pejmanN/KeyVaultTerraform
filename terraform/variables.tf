@@ -21,6 +21,22 @@ variable "deploy_service" {
   default     = false
 }
 
+// Shared infrastructure remote state variables
+variable "shared_resource_group_name" {
+  description = "Resource group containing the shared infrastructure state storage"
+  default     = "shared-infrastructure-rg"
+}
+
+variable "shared_storage_account_name" {
+  description = "Storage account containing the shared infrastructure state"
+  default     = "tfstate12345"
+}
+
+variable "shared_container_name" {
+  description = "Container name for the shared infrastructure state"
+  default     = "tfstate"
+}
+
 variable "tags" {
   description = "Tags to apply to resources"
   type        = map(string)
